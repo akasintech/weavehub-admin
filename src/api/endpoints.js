@@ -1,4 +1,4 @@
-export const API_BASE_URL = "https://weavehub-api.onrender.com/api/v1"; // Local dev backend
+export const API_BASE_URL = "https://weavehub-api-w0l4.onrender.com/api/v1"; // Local dev backend
 export const SOCKET_BASE_URL = API_BASE_URL.replace(/\/api\/v1$/, "");
 export const SOCKET_NAMESPACE = `${SOCKET_BASE_URL}/api/v1/socket`;
 

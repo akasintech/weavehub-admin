@@ -1,36 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
-import { Package, ShoppingBag, Store, Users, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
+import { Package, ShoppingBag, Store, Users, Shield, TrendingUp, AlertTriangle, Loader2 } from 'lucide-react';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
-    users: 0,
-    stores: 0,
-    orders: 0,
-    products: 0,
-    revenue: 0
+    users: null,
+    stores: null,
+    products: null,
+    vendors: null,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
-      setError('');
       try {
-        // Attempt to fetch from analytics or pagination APIs to get basic stats
-        // First try the new admin analytics if it exists, otherwise fallback to page=1 counts
-        const userRes = await apiClient.get(ENDPOINTS.admin.users(1, 1));
-        const storeRes = await apiClient.get(ENDPOINTS.admin.stores(1, 1));
-        
-        setStats(prev => ({
-          ...prev,
-          users: userRes.data?.data?.total || userRes.data?.total || 0,
-          stores: storeRes.data?.data?.total || storeRes.data?.total || 0,
-        }));
+        const [userRes, storeRes, productRes] = await Promise.allSettled([
+          apiClient.get(ENDPOINTS.admin.users(1, 500)),   // large limit to count vendors by role
+          apiClient.get(ENDPOINTS.admin.stores(1, 1)),
+          apiClient.get(ENDPOINTS.admin.products(1, 1)),
+        ]);
+
+        const getApiTotal = (res) => {
+          if (res.status !== 'fulfilled') return null;
+          const d = res.value?.data;
+          return d?.data?.total ?? d?.data?.pagination?.total ?? d?.total ?? null;
+        };
+
+        // Derive vendor count by filtering the users array by role
+        let vendorCount = null;
+        if (userRes.status === 'fulfilled') {
+          const d = userRes.value?.data;
+          const usersArray =
+            d?.data?.users ?? d?.data?.records ?? d?.users ?? d?.data ?? [];
+          if (Array.isArray(usersArray)) {
+            vendorCount = usersArray.filter(
+              (u) => String(u.role).toLowerCase() === 'vendor'
+            ).length || null;
+          }
+          // Also check if the API provides it directly
+          vendorCount =
+            d?.data?.vendorCount ?? d?.vendorCount ?? vendorCount;
+        }
+
+        setStats({
+          users: getApiTotal(userRes),
+          stores: getApiTotal(storeRes),
+          products: getApiTotal(productRes),
+          vendors: vendorCount,
+        });
       } catch (err) {
-        console.error("Failed to load some dashboard metrics:", err);
+        console.error('Failed to load dashboard metrics:', err);
       } finally {
         setLoading(false);
       }
@@ -39,12 +60,17 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const formatVal = (val) => {
+    if (loading) return <Loader2 size={20} className="spin-icon" style={{ color: 'var(--text-muted)' }} />;
+    if (val === null || val === undefined) return '—';
+    return Number(val).toLocaleString();
+  };
+
   const metricCards = [
     { title: 'Total Users', value: stats.users, icon: <Users size={24} />, color: '#3B82F6', bg: '#EFF6FF' },
     { title: 'Active Stores', value: stats.stores, icon: <Store size={24} />, color: '#2ECC71', bg: '#ECFDF5' },
-    { title: 'Total Products', value: '---', icon: <Package size={24} />, color: '#FF8C42', bg: '#FFF7ED' },
-    { title: 'Total Orders', value: '---', icon: <ShoppingBag size={24} />, color: '#8B5CF6', bg: '#F5F3FF' },
-    { title: 'Total Revenue', value: '---', icon: <DollarSign size={24} />, color: '#10B981', bg: '#ECFDF5' },
+    { title: 'Total Products', value: stats.products, icon: <Package size={24} />, color: '#FF8C42', bg: '#FFF7ED' },
+    { title: 'Total Vendors', value: stats.vendors, icon: <Shield size={24} />, color: '#8B5CF6', bg: '#F5F3FF' },
   ];
 
   return (
@@ -64,7 +90,7 @@ const Dashboard = () => {
             </div>
             <div>
               <span>{card.title}</span>
-              <strong>{card.value}</strong>
+              <strong>{formatVal(card.value)}</strong>
             </div>
           </div>
         ))}

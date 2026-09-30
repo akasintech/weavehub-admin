@@ -24,6 +24,8 @@ const Login = () => {
         password,
       });
 
+      console.log(response.data); // Log the response data for debugging
+
       const token = response.data?.token || response.data?.data?.token;
       if (token) {
         login(token);
