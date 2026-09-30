@@ -1,0 +1,146 @@
+export const API_BASE_URL = "https://weavehub-api.onrender.com/api/v1"; // Local dev backend
+export const SOCKET_BASE_URL = API_BASE_URL.replace(/\/api\/v1$/, "");
+export const SOCKET_NAMESPACE = `${SOCKET_BASE_URL}/api/v1/socket`;
+
+export const ENDPOINTS = {
+  auth: {
+    signup: "/auth/users/sign-up",
+    login: "/auth/users/login",
+    vendorSignup: "/auth/vendors/sign-up",
+    vendorLogin: "/auth/vendors/login",
+    adminLogin: "/auth/admins/login",
+    adminSignup: "/auth/admins/sign-up",
+  },
+  user: {
+    profile: "/users/user",
+    photo: "/users/user/photo",
+    socket: "/socket"
+  },
+  store: {
+    create: "/stores/",
+    get: "/stores/",
+    getVendorStore: (storeId) => `/stores/${storeId}`,
+    getAllStores: `/stores/`,
+    update: (storeId) => `/stores/${storeId}`,
+    vendorStore: "/stores/vendor",
+    vendorStoreWithId: (vendorId) => `/stores/vendor/${vendorId}`,
+  },
+  product: {
+    create: "/products/",
+    search: "/search",
+    publicSearch: "/products/search",
+    vendorSearch: "/products/vendors/search",
+    updateStatus:  `/products/status`,
+    addCategories:  (productId) => `/products/categories/${productId}`,
+    removeCategories:  (productId) => `/products/categories/${productId}`,
+    uploadProductMedia:  (productId) => `/products/media/${productId}`,
+    product: (productId) => `/products/${productId}`,
+    updateProduct: (productId) => `/products/${productId}`,
+    createProductVariants:(productId) => `/products/variants/${productId}`,
+    variant: (variantId) => `/products/variants/${variantId}`,
+    updateProductVariants: (variantId) => `/products/variants/${variantId}`,
+    updateProductDefaultVariants: (variantId) => `/products/variants/${variantId}/default`,
+    attributes: (productId) => `/products/attributes/${productId}`,
+    vendorProduct: (productId) => `/products/vendors/${productId}`,
+    storeProducts: (productId) => `/products/stores/${productId}`,
+    productsAttributesAdd: (productId) => `/products/attributes/${productId}`,
+    productsAttributesGet: (productId) => `/products/attributes/${productId}`,
+    list: (categoryId) => categoryId ? `/products?categoryId=${categoryId}` : "/products/search",
+    vendorList: (categoryId) => categoryId ? `/products/vendors?categoryId=${categoryId}` : "/products/vendors/search",
+    vendorStoreProducts: (storeId) => `/products/stores/vendors/${storeId}`,
+    updateMedia: (storeId, productId) =>
+      `/products/media/${storeId}/${productId}`,
+  },
+  category: {
+    create: "/categories/",
+    list: "/categories/",
+    one: (id) => `/categories/${id}`,
+    update: (id) => `/categories/${id}`,
+  },
+  notification: {
+    list: "/notifications/",
+    one: (id) => `/notifications/${id}`,
+    markAsRead: (id) => `/notifications/${id}`,
+  },
+  order: {
+    create: "/orders",
+    verify: (transactionId) => `/orders/verify?transaction_id=${transactionId}`,
+    myOrders: (page = 1, limit = 10) =>
+      `/orders/my-orders?page=${page}&limit=${limit}`,
+    storeOrders: (page = 1, limit = 10) =>
+      `/orders/store/orders?page=${page}&limit=${limit}`,
+    adminOrders: (page = 1, limit = 10) =>
+      `/orders/admin/all?page=${page}&limit=${limit}`,
+    one: (orderId) => `/orders/${orderId}`,
+    updateStatus: (orderId) => `/orders/${orderId}/status`,
+  },
+  wallet: {
+    get: "/wallets",
+    transactions: (page = 1, limit = 20) => `/wallets/transactions?page=${page}&limit=${limit}`,
+    activateVirtualAccount: "/wallets/activate-virtual-account",
+    fund: "/wallets/fund",
+    verifyFunding: "/wallets/verify-funding",
+    webhook: "/wallets/webhook",
+    withdraw: "/wallets/withdraw",
+  },
+  coupon: {
+    create: "/coupons",
+    store: (storeId) => `/coupons/store/${storeId}`,
+  },
+  analytics: {
+    vendorProducts: "/analytics/products/vendor",
+    adminProducts: "/analytics/products/admin",
+  },
+  inventory: {
+    create: "/inventories/",
+    list: "/inventories",
+    one: (inventoryId) => `/inventories/${inventoryId}`,
+    bySku: (sku) => `/inventories/sku/${sku}`,
+  },
+  comment: {
+    create: "/comments/",
+    list: (productId) => `/comments/?productId=${productId}`,
+    one: (commentId) => `/comments/${commentId}`,
+    update: (commentId) => `/comments/${commentId}`,
+    delete: (commentId) => `/comments/${commentId}`,
+  },
+  review: {
+    create: "/reviews/",
+    list: (productId) => `/reviews/${productId}`,
+    one: (productId, reviewId) => `/reviews/${productId}/${reviewId}`,
+  },
+  wishlist: {
+    add: "/wishlists/",
+    list: "/wishlists/",
+    remove: (productId) => `/wishlists/${productId}`,
+    clear: "/wishlists/clear",
+  },
+  supportTicket: {
+    create: "/support-tickets",
+    list: "/support-tickets",
+    updateStatus: (ticketId) => `/support-tickets/${ticketId}/status`,
+    reply: (ticketId) => `/support-tickets/${ticketId}/reply`,
+  },
+  admin: {
+    users: (page = 1, limit = 10) => `/admins/users?page=${page}&limit=${limit}`,
+    user: (userId) => `/admins/users/${userId}`,
+    deleteUser: (userId) => `/admins/users/${userId}`,
+    stores: (page = 1, limit = 10) => `/admins/stores?page=${page}&limit=${limit}`,
+    updateStoreStatus: (storeId) => `/admins/stores/${storeId}/status`,
+    updateUserStatus: (userId) => `/admins/users/${userId}/status`,
+    updateUserRole: (userId) => `/admins/users/${userId}/role`,
+    defaultAdmin: 'admins/default-admin',
+    profile: "/admins/profile",
+    products: (page = 1, limit = 20) => `/admins/products?page=${page}&limit=${limit}`,
+    product: (productId) => `/admins/products/${productId}`,
+    updateProductStatus: (productId) => `/admins/products/${productId}/status`,
+    updateProductFeatures: (productId) => `/admins/products/${productId}/features`,
+    deleteProduct: (productId) => `/admins/products/${productId}`,
+  },
+  recommendation: {
+    trending: (page = 1, limit = 10) => `/recommendations/trending?page=${page}&limit=${limit}`,
+    me: (page = 1, limit = 10) => `/recommendations/me?page=${page}&limit=${limit}`,
+    related: (productId, page = 1, limit = 5) => `/recommendations/${productId}/related?page=${page}&limit=${limit}`,
+    alsoBought: (productId, page = 1, limit = 5) => `/recommendations/${productId}/also-bought?page=${page}&limit=${limit}`,
+  },
+};
