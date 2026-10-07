@@ -56,6 +56,7 @@ export const ENDPOINTS = {
     list: "/categories/",
     one: (id) => `/categories/${id}`,
     update: (id) => `/categories/${id}`,
+    delete: (id) => `/categories/${id}`,
   },
   notification: {
     list: "/notifications/",
