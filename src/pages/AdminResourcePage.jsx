@@ -263,7 +263,14 @@ const pageConfigs = {
     actions: [
       { label: 'Approve', icon: <CheckCircle size={16} />,    request: (id) => apiClient.patch(ENDPOINTS.admin.updateProductStatus(id),   { status: 'active' }) },
       { label: 'Hide',    icon: <XCircle size={16} />,         request: (id) => apiClient.patch(ENDPOINTS.admin.updateProductStatus(id),   { status: 'inactive' }) },
-      { label: 'Feature', icon: <SlidersHorizontal size={16}/>, request: (id) => apiClient.patch(ENDPOINTS.admin.updateProductFeatures(id), { isFeatured: true, featured: true }) },
+      {
+        label: (r) => (r.isFeatured || r.featured ? 'Unfeature' : 'Feature'),
+        icon: <SlidersHorizontal size={16} />,
+        request: (id, r) => {
+          const nextVal = !(r?.isFeatured || r?.featured);
+          return apiClient.patch(ENDPOINTS.admin.updateProductFeatures(id), { isFeatured: nextVal, featured: nextVal });
+        },
+      },
       { label: 'Delete', icon: <Trash2 size={16} />, danger: true, request: (id) => apiClient.delete(ENDPOINTS.admin.deleteProduct(id)), confirm: 'Delete this product listing?' },
     ],
   },
@@ -418,8 +425,9 @@ export default function AdminResourcePage({ resource }) {
   const runAction = async (action, record) => {
     const id = getId(record);
     if (!id) return;
+    const actionLabel = typeof action.label === 'function' ? action.label(record) : action.label;
     if (action.confirm && !window.confirm(action.confirm)) return;
-    setBusyId(`${id}:${action.label}`);
+    setBusyId(`${id}:${actionLabel}`);
     setError('');
     try {
       await action.request(id, record);
@@ -521,14 +529,19 @@ export default function AdminResourcePage({ resource }) {
                     })}
                     <td>
                       <div className="table-actions">
-                        {config.actions.map((action) => (
-                          <ActionButton
-                            key={action.label}
-                            {...action}
-                            disabled={busyId === `${id}:${action.label}`}
-                            onClick={() => runAction(action, record)}
-                          />
-                        ))}
+                        {config.actions.map((action) => {
+                          const actionLabel = typeof action.label === 'function' ? action.label(record) : action.label;
+                          return (
+                            <ActionButton
+                              key={actionLabel}
+                              label={actionLabel}
+                              icon={action.icon}
+                              danger={action.danger}
+                              disabled={busyId === `${id}:${actionLabel}`}
+                              onClick={() => runAction(action, record)}
+                            />
+                          );
+                        })}
                       </div>
                     </td>
                   </tr>
